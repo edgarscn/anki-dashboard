@@ -33,6 +33,16 @@ export const ankiService = {
     }
     return allInfo;
   },
+  getReviewsOfCardsChunked: async (cardIds) => {
+    const chunkSize = 500;
+    let allReviews = {};
+    for (let i = 0; i < cardIds.length; i += chunkSize) {
+      const chunk = cardIds.slice(i, i + chunkSize);
+      const reviewsInfo = await invokeAnki('getReviewsOfCards', { cards: chunk });
+      allReviews = { ...allReviews, ...reviewsInfo };
+    }
+    return allReviews;
+  },
   getReviewActivity: () => invokeAnki('getNumCardsReviewedByDay'),
   checkConnection: async () => {
     try {

@@ -72,9 +72,13 @@ export default function Dashboard() {
         let processedData = null;
         
         if (allCardIds.length > 0) {
-            // Usa chunking para não estourar o limite de payload
-            const cardsInfo = await ankiService.getCardsInfoChunked(allCardIds);
-            processedData = processRetentionMetrics(cardsInfo, filters.orderBy);
+            // Fetch chunked cards info and their full historical review logs
+            const [cardsInfo, reviewsInfo] = await Promise.all([
+               ankiService.getCardsInfoChunked(allCardIds),
+               ankiService.getReviewsOfCardsChunked(allCardIds)
+            ]);
+            
+            processedData = processRetentionMetrics(cardsInfo, reviewsInfo, filters.orderBy);
         }
 
         setMetrics({
@@ -138,7 +142,7 @@ export default function Dashboard() {
               onChange={(e) => handleFilterChange('orderBy', e.target.value)}
             >
               <option value="retention_asc">Menor Retenção Primeiro</option>
-              <option value="lapses_desc">Mais Erros Primeiro</option>
+              <option value="lapses_desc">Mais Erros (Novamente) Primeiro</option>
             </select>
           </div>
           
@@ -168,7 +172,7 @@ export default function Dashboard() {
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Visão Geral de Desempenho</h2>
             <p className="text-sm text-gray-500">
-              {filters.deck || filters.tag ? "Análise Profunda ativada" : "Selecione um filtro na barra lateral"}
+              {filters.deck || filters.tag ? "Análise Profunda ativada (Varredura de Logs Históricos)" : "Selecione um filtro na barra lateral"}
             </p>
           </div>
         </header>
@@ -188,7 +192,7 @@ export default function Dashboard() {
           ) : metrics.loading ? (
              <div className="flex h-full flex-col items-center justify-center text-blue-500">
                <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-               <p className="font-medium animate-pulse">Varrendo banco de dados e calculando estatísticas...</p>
+               <p className="font-medium animate-pulse">Varrendo banco de dados e histórico de botões apertados...</p>
              </div>
           ) : metrics.error ? (
              <div className="bg-red-50 text-red-700 p-6 rounded-md shadow-sm">
@@ -231,8 +235,8 @@ export default function Dashboard() {
 
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between border-l-4 border-l-indigo-500 transition hover:shadow-md">
                   <div>
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Total de Revisões</p>
-                    <p className="text-3xl font-black text-gray-800 mt-1">{metrics.advanced.totalReps}</p>
+                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Total de Acertos</p>
+                    <p className="text-3xl font-black text-gray-800 mt-1">{metrics.advanced.totalHits}</p>
                   </div>
                   <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-500">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
@@ -241,7 +245,7 @@ export default function Dashboard() {
 
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between border-l-4 border-l-red-500 transition hover:shadow-md">
                   <div>
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Esquecimentos</p>
+                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Erros (Novamente)</p>
                     <p className="text-3xl font-black text-gray-800 mt-1">{metrics.advanced.totalLapses}</p>
                   </div>
                   <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center text-red-500">

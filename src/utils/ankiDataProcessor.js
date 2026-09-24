@@ -1,6 +1,6 @@
-export const processRetentionMetrics = (cardsInfo, orderBy = 'retention_asc') => {
+export const processRetentionMetrics = (cardsInfo, reviewsInfo, orderBy = 'retention_asc') => {
   let totalReps = 0;
-  let totalLapses = 0;
+  let totalErrors = 0;
 
   const retentionBrackets = { '0-50%': 0, '51-70%': 0, '71-85%': 0, '86-100%': 0 };
   const allCards = [];
@@ -8,9 +8,19 @@ export const processRetentionMetrics = (cardsInfo, orderBy = 'retention_asc') =>
   cardsInfo.forEach(card => {
     if (card.reps > 0) {
       totalReps += card.reps;
-      totalLapses += card.lapses;
-      const hits = card.reps - card.lapses;
-      const retention = (hits / card.reps) * 100;
+      
+      let cardErrors = 0;
+      const cardRevs = reviewsInfo[card.cardId];
+      if (cardRevs && cardRevs.length > 0) {
+        // ease === 1 means the user clicked 'Again' (Errei)
+        cardErrors = cardRevs.filter(r => r.ease === 1).length;
+      }
+      totalErrors += cardErrors;
+      
+      const hits = card.reps - cardErrors;
+      // Prevent negative hits if data is anomalous, though it shouldn't be
+      const safeHits = hits < 0 ? 0 : hits;
+      const retention = (safeHits / card.reps) * 100;
       
       if (retention <= 50) retentionBrackets['0-50%']++;
       else if (retention <= 70) retentionBrackets['51-70%']++;
@@ -21,13 +31,13 @@ export const processRetentionMetrics = (cardsInfo, orderBy = 'retention_asc') =>
         id: card.cardId,
         question: card.fields?.Frente?.value || card.fields?.Front?.value || card.fields?.Enunciado?.value || card.fields?.Texto?.value || "Cartão sem frente identificável",
         reps: card.reps,
-        lapses: card.lapses,
+        lapses: cardErrors, 
         retention: retention.toFixed(1)
       });
     }
   });
 
-  const totalHits = totalReps - totalLapses;
+  const totalHits = totalReps - totalErrors;
   const globalRetention = totalReps > 0 ? ((totalHits / totalReps) * 100).toFixed(1) : 0;
 
   const chartData = [
@@ -46,7 +56,7 @@ export const processRetentionMetrics = (cardsInfo, orderBy = 'retention_asc') =>
     })
     .slice(0, 10);
 
-  return { totalReps, totalLapses, globalRetention, chartData, criticalCards };
+  return { totalReps, totalLapses: totalErrors, totalHits, globalRetention, chartData, criticalCards };
 };
 
 export const processReviewActivity = (rawData) => {
