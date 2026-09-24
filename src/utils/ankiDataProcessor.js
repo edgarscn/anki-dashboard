@@ -46,7 +46,7 @@ export const processRetentionMetrics = (cardsInfo, orderBy = 'retention_asc') =>
     })
     .slice(0, 10);
 
-  return { totalReps, totalLapses, totalHits, globalRetention, chartData, criticalCards };
+  return { totalReps, totalLapses, globalRetention, chartData, criticalCards };
 };
 
 export const processReviewActivity = (rawData) => {

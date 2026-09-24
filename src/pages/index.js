@@ -231,8 +231,8 @@ export default function Dashboard() {
 
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between border-l-4 border-l-indigo-500 transition hover:shadow-md">
                   <div>
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Total de Acertos</p>
-                    <p className="text-3xl font-black text-gray-800 mt-1">{metrics.advanced.totalHits}</p>
+                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Total de Revisões</p>
+                    <p className="text-3xl font-black text-gray-800 mt-1">{metrics.advanced.totalReps}</p>
                   </div>
                   <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-500">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
@@ -241,7 +241,7 @@ export default function Dashboard() {
 
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between border-l-4 border-l-red-500 transition hover:shadow-md">
                   <div>
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Total de Erros</p>
+                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Esquecimentos</p>
                     <p className="text-3xl font-black text-gray-800 mt-1">{metrics.advanced.totalLapses}</p>
                   </div>
                   <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center text-red-500">
