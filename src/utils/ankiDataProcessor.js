@@ -1,8 +1,9 @@
-export const processRetentionMetrics = (cardsInfo) => {
+export const processRetentionMetrics = (cardsInfo, orderBy = 'retention_asc') => {
   let totalReps = 0;
   let totalLapses = 0;
 
   const retentionBrackets = { '0-50%': 0, '51-70%': 0, '71-85%': 0, '86-100%': 0 };
+  const allCards = [];
 
   cardsInfo.forEach(card => {
     if (card.reps > 0) {
@@ -10,10 +11,19 @@ export const processRetentionMetrics = (cardsInfo) => {
       totalLapses += card.lapses;
       const hits = card.reps - card.lapses;
       const retention = (hits / card.reps) * 100;
+      
       if (retention <= 50) retentionBrackets['0-50%']++;
       else if (retention <= 70) retentionBrackets['51-70%']++;
       else if (retention <= 85) retentionBrackets['71-85%']++;
       else retentionBrackets['86-100%']++;
+
+      allCards.push({
+        id: card.cardId,
+        question: card.fields?.Frente?.value || card.fields?.Front?.value || card.fields?.Enunciado?.value || card.fields?.Texto?.value || "Cartão sem frente identificável",
+        reps: card.reps,
+        lapses: card.lapses,
+        retention: retention.toFixed(1)
+      });
     }
   });
 
@@ -27,7 +37,16 @@ export const processRetentionMetrics = (cardsInfo) => {
     { name: 'Excelente (86-100%)', cartoes: retentionBrackets['86-100%'], fill: '#10b981' },
   ];
 
-  return { totalReps, totalLapses, totalHits, globalRetention, chartData };
+  // Ordena os piores cartões (Leeches) baseado na preferência do usuário
+  const criticalCards = allCards
+    .filter(c => c.lapses > 0)
+    .sort((a, b) => {
+      if (orderBy === 'lapses_desc') return b.lapses - a.lapses || a.retention - b.retention;
+      return a.retention - b.retention || b.lapses - a.lapses;
+    })
+    .slice(0, 10);
+
+  return { totalReps, totalLapses, totalHits, globalRetention, chartData, criticalCards };
 };
 
 export const processReviewActivity = (rawData) => {

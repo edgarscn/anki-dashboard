@@ -14,16 +14,25 @@ export const invokeAnki = async (action, params = {}) => {
     }
     return data.result;
   } catch (error) {
-    console.error(`Erro ao invocar ${action} no AnkiConnect:`, error);
     throw error;
   }
 };
 
 export const ankiService = {
   getDeckNames: () => invokeAnki('deckNames'),
-  getDeckStats: (deckName) => invokeAnki('getDeckStats', { decks: [deckName] }),
-  getCardsToReview: (deckName) => invokeAnki('findCards', { query: `deck:"${deckName}" is:due` }),
-  getCardsInfo: (cardIds) => invokeAnki('cardsInfo', { cards: cardIds }),
+  getTags: () => invokeAnki('getTags'),
+  getCardsToReview: (query) => invokeAnki('findCards', { query: `${query} is:due` }),
+  findCards: (query) => invokeAnki('findCards', { query }),
+  getCardsInfoChunked: async (cardIds) => {
+    const chunkSize = 500;
+    let allInfo = [];
+    for (let i = 0; i < cardIds.length; i += chunkSize) {
+      const chunk = cardIds.slice(i, i + chunkSize);
+      const info = await invokeAnki('cardsInfo', { cards: chunk });
+      allInfo = allInfo.concat(info);
+    }
+    return allInfo;
+  },
   getReviewActivity: () => invokeAnki('getNumCardsReviewedByDay'),
   checkConnection: async () => {
     try {
