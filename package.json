@@ -4,11 +4,11 @@
   "description": "Anki Performance Dashboard",
   "version": "1.0.0",
   "scripts": {
-    "develop": "npx gatsby develop",
-    "start": "npx gatsby develop",
-    "build": "npx gatsby build",
-    "serve": "npx gatsby serve",
-    "clean": "npx gatsby clean"
+    "develop": "node ./node_modules/gatsby/cli.js develop",
+    "start": "node ./node_modules/gatsby/cli.js develop",
+    "build": "node ./node_modules/gatsby/cli.js build",
+    "serve": "node ./node_modules/gatsby/cli.js serve",
+    "clean": "node ./node_modules/gatsby/cli.js clean"
   },
   "dependencies": {
     "gatsby": "^5.13.0",
